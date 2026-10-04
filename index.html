@@ -3,15 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Gametg-jumple</title>
+  <title>Jumple</title>
   
-  <!-- Telegram Web App SDK -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
     body {
-      background: #0d0e12;
+      background: #0b0c10;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -26,15 +25,36 @@
       width: 100%;
       max-width: 420px;
       height: 100vh;
-      background: #181920;
+      background: #12131a;
       overflow: hidden;
     }
-    canvas {
-      display: block;
-      width: 100%;
-      height: 100%;
+    canvas { display: block; width: 100%; height: 100%; }
+
+    /* Верхние сервисные кнопки */
+    .top-nav {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      right: 14px;
+      display: flex;
+      justify-content: space-between;
+      z-index: 30;
+      pointer-events: auto;
     }
-    /* Верхняя панель счета в игре */
+    .nav-pill {
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      backdrop-filter: blur(6px);
+    }
+    .nav-pill:active { transform: scale(0.95); }
+
+    /* HUD во время игры */
     #top-bar {
       position: absolute;
       top: 14px;
@@ -48,7 +68,7 @@
       z-index: 5;
     }
     .badge {
-      background: rgba(0, 0, 0, 0.55);
+      background: rgba(0, 0, 0, 0.6);
       padding: 6px 14px;
       border-radius: 20px;
       backdrop-filter: blur(6px);
@@ -59,48 +79,26 @@
     .modal {
       position: absolute;
       inset: 0;
-      background: rgba(13, 14, 20, 0.94);
+      background: rgba(10, 11, 16, 0.95);
       backdrop-filter: blur(12px);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 24px;
+      padding: 20px;
       text-align: center;
       z-index: 20;
     }
     .hidden { display: none !important; }
 
-    /* Кнопка Поделиться (слева сверху) */
-    .btn-share {
-      position: absolute;
-      top: 16px;
-      left: 16px;
-      background: rgba(255, 255, 255, 0.12);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      color: #fff;
-      padding: 8px 14px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      z-index: 30;
-    }
-    .btn-share:active { transform: scale(0.96); }
+    h1 { font-size: 36px; font-weight: 900; letter-spacing: 2px; margin-bottom: 4px; color: #fff; text-shadow: 0 4px 15px rgba(0,168,255,0.4); }
+    h2 { font-size: 22px; margin-bottom: 6px; }
+    p { font-size: 14px; color: #8a8f9d; margin-bottom: 16px; }
 
-    /* Заголовки и текст */
-    h1 { font-size: 30px; font-weight: 800; letter-spacing: 1px; margin-bottom: 6px; color: #fff; text-shadow: 0 4px 12px rgba(0,0,0,0.5); }
-    h2 { font-size: 22px; margin-bottom: 6px; text-transform: uppercase; }
-    p { font-size: 14px; color: #8f94a6; margin-bottom: 20px; }
-
-    /* Большая центральная кнопка "Прыгать" */
     .btn-play {
       width: 220px;
-      height: 65px;
-      background: linear-gradient(135deg, #00a8ff, #0066cc);
+      height: 64px;
+      background: linear-gradient(135deg, #00b4d8, #0077b6);
       color: #fff;
       border: none;
       border-radius: 20px;
@@ -108,103 +106,137 @@
       font-weight: 800;
       letter-spacing: 1px;
       cursor: pointer;
-      box-shadow: 0 8px 24px rgba(0, 102, 204, 0.4);
-      margin-bottom: 30px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
+      box-shadow: 0 8px 24px rgba(0, 119, 182, 0.45);
+      margin: 10px 0 24px;
     }
     .btn-play:active { transform: scale(0.96); }
 
-    /* Нижний ряд кнопок меню (Рекорды и Магазин) */
-    .menu-bottom-row {
+    .menu-row {
       display: flex;
-      gap: 12px;
+      gap: 8px;
       width: 100%;
-      max-width: 280px;
+      max-width: 320px;
+      margin-bottom: 6px;
     }
     .btn-menu-sub {
       flex: 1;
-      background: #1f222d;
-      border: 1px solid #2d3242;
-      color: #cbd0dc;
-      padding: 12px 10px;
+      background: #1c1e28;
+      border: 1px solid #2d3140;
+      color: #e2e8f0;
+      padding: 12px 6px;
       border-radius: 14px;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 600;
       cursor: pointer;
     }
     .btn-menu-sub:active { transform: scale(0.96); }
 
-    /* Стандартные кнопки */
     .btn {
       width: 100%;
       max-width: 260px;
-      background: #2481cc;
+      background: #0077b6;
       color: #fff;
       border: none;
-      padding: 13px 18px;
-      margin: 6px 0;
+      padding: 12px 18px;
+      margin: 5px 0;
       border-radius: 12px;
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 600;
       cursor: pointer;
     }
     .btn:active { transform: scale(0.98); }
-    .btn-secondary { background: #222530; color: #cbd0dc; border: 1px solid #2e3342; }
+    .btn-secondary { background: #222533; color: #cbd5e1; border: 1px solid #2e3447; }
+    .btn-danger { background: #b91c1c; color: #fff; }
 
-    /* Магазин */
+    /* Табы магазина */
+    .tabs-bar {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+    .tab-btn {
+      background: #1a1d28;
+      border: 1px solid #2e3446;
+      color: #94a3b8;
+      padding: 6px 16px;
+      border-radius: 16px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .tab-btn.active {
+      background: #0077b6;
+      color: #fff;
+      border-color: #0077b6;
+    }
+
     .shop-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
       width: 100%;
-      max-width: 290px;
-      margin-bottom: 18px;
+      max-width: 300px;
+      margin-bottom: 16px;
+      max-height: 280px;
+      overflow-y: auto;
     }
-    .skin-card {
-      background: #1c1e27;
-      border: 2px solid #2b2f3d;
+    .shop-card {
+      background: #181b24;
+      border: 2px solid #282d3d;
       border-radius: 12px;
-      padding: 10px;
+      padding: 8px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
     }
-    .skin-card.active { border-color: #00a8ff; }
-    .skin-preview { width: 34px; height: 34px; border-radius: 8px; }
-    .skin-btn {
+    .shop-card.active { border-color: #00b4d8; }
+    .item-preview { width: 36px; height: 36px; border-radius: 8px; }
+    .shop-card-btn {
       width: 100%;
-      padding: 6px 0;
+      padding: 5px 0;
       border-radius: 6px;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 600;
       border: none;
       cursor: pointer;
     }
 
-    /* Таблица рекордов */
-    .leader-list {
+    /* Списки данных */
+    .data-list {
       width: 100%;
-      max-width: 290px;
-      background: #1c1e27;
+      max-width: 300px;
+      background: #161822;
       border-radius: 12px;
-      padding: 10px 14px;
-      margin-bottom: 18px;
-      max-height: 250px;
+      padding: 8px 12px;
+      margin-bottom: 16px;
+      max-height: 230px;
       overflow-y: auto;
     }
-    .leader-row {
+    .data-row {
       display: flex;
       justify-content: space-between;
+      align-items: center;
       padding: 8px 0;
-      border-bottom: 1px solid #282c39;
+      border-bottom: 1px solid #242838;
       font-size: 13px;
     }
-    .leader-row:last-child { border-bottom: none; }
-    .leader-row.me { color: #00e5ff; font-weight: 700; }
+    .data-row:last-child { border-bottom: none; }
+    .data-row.me { color: #00e5ff; font-weight: 700; }
+
+    /* Поля ввода админа */
+    .admin-input {
+      width: 100%;
+      max-width: 260px;
+      background: #1c1f2b;
+      border: 1px solid #333a4f;
+      color: #fff;
+      padding: 10px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      font-size: 14px;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
@@ -212,60 +244,89 @@
 <div id="game-container">
   <canvas id="game"></canvas>
 
-  <!-- Верхняя строка во время прыжков -->
+  <div class="top-nav" id="menu-top-nav">
+    <button class="nav-pill" onclick="shareGame()">↗ Поделиться</button>
+    <button class="nav-pill" onclick="openAdminPrompt()">🛠 Админ</button>
+  </div>
+
   <div id="top-bar">
-    <div class="badge" id="hud-score">Счет: 0</div>
+    <div class="badge" id="hud-score">Высота: 0</div>
     <div class="badge" id="hud-coins">🪙 0</div>
   </div>
 
   <!-- Главное меню -->
   <div id="modal-menu" class="modal">
-    <button class="btn-share" onclick="shareGame()">↗ Поделиться</button>
-
     <h1>JUMPLE</h1>
     <p id="menu-stats">Рекорд: 0 | Монеты: 0 🪙</p>
 
-    <button class="btn-play" onclick="startGame()">
-      <span>🚀</span> ПРЫГАТЬ
-    </button>
+    <button class="btn-play" onclick="startGame()">ПРЫГАТЬ</button>
 
-    <div class="menu-bottom-row">
+    <div class="menu-row">
       <button class="btn-menu-sub" onclick="openLeaderboard()">🏆 Рекорды</button>
       <button class="btn-menu-sub" onclick="openShop()">🛍 Магазин</button>
+      <button class="btn-menu-sub" onclick="openReferrals()">👥 Рефералы</button>
     </div>
   </div>
 
-  <!-- Экран Game Over -->
+  <!-- Game Over -->
   <div id="modal-gameover" class="modal hidden">
-    <h2>ПОРАЖЕНИЕ</h2>
-    <p id="go-score">Счет: 0 | Рекорд: 0</p>
+    <h2>ПАДЕНИЕ</h2>
+    <p id="go-score">Высота: 0 | Рекорд: 0</p>
     <button class="btn" onclick="startGame()">Прыгать снова</button>
     <button class="btn btn-secondary" onclick="openShop()">🛍 Магазин</button>
-    <button class="btn btn-secondary" onclick="openLeaderboard()">🏆 Рекорды</button>
     <button class="btn btn-secondary" onclick="openMenu()">В меню</button>
   </div>
 
-  <!-- Окно магазина -->
+  <!-- Магазин скинов и тем -->
   <div id="modal-shop" class="modal hidden">
-    <h2>Магазин скинов</h2>
+    <h2>Кастомизация</h2>
     <p>Баланс: <span id="shop-coins-val">0</span> 🪙</p>
+    <div class="tabs-bar">
+      <button class="tab-btn active" id="tab-btn-skins" onclick="switchShopTab('skins')">Скины</button>
+      <button class="tab-btn" id="tab-btn-themes" onclick="switchShopTab('themes')">Фоны</button>
+    </div>
     <div class="shop-grid" id="shop-items"></div>
     <button class="btn btn-secondary" onclick="openMenu()">Назад</button>
   </div>
 
-  <!-- Окно рекордов -->
+  <!-- Лидерборд -->
   <div id="modal-leaders" class="modal hidden">
-    <h2>Топ игроков</h2>
+    <h2>Мировые рекорды</h2>
     <p id="db-status">Загрузка...</p>
-    <div class="leader-list" id="leader-board-items"></div>
+    <div class="data-list" id="leader-board-items"></div>
     <button class="btn btn-secondary" onclick="openMenu()">Назад</button>
+  </div>
+
+  <!-- Рефералы -->
+  <div id="modal-referrals" class="modal hidden">
+    <h2>Ваши друзья</h2>
+    <p id="ref-count-text">Приглашено: 0</p>
+    <div class="data-list" id="referrals-items"></div>
+    <button class="btn" onclick="shareGame()">🔗 Пригласить друга</button>
+    <button class="btn btn-secondary" onclick="openMenu()">Назад</button>
+  </div>
+
+  <!-- Панель разработчика -->
+  <div id="modal-admin" class="modal hidden">
+    <h2>Панель Разработчика</h2>
+    <p>Управление состоянием игры</p>
+    <input type="number" id="admin-coins-input" class="admin-input" placeholder="Количество монет">
+    <button class="btn" onclick="adminSetCoins()">Установить монеты</button>
+    <button class="btn btn-secondary" onclick="adminUnlockAll()">Разблокировать всё</button>
+    <input type="number" id="admin-score-input" class="admin-input" placeholder="Новый рекорд" style="margin-top:8px;">
+    <button class="btn btn-secondary" onclick="adminSetScore()">Изменить рекорд</button>
+    <button class="btn btn-danger" style="margin-top:10px;" onclick="adminResetDatabase()">💣 Очистить базу рекордов</button>
+    <button class="btn btn-secondary" onclick="openMenu()">Выйти</button>
   </div>
 </div>
 
 <script>
   const DB_BASE_URL = "https://gametg-jumple-default-rtdb.firebaseio.com";
+  const ADMIN_PASSWORD = "7777";
+  
+  // Базовая ссылка на Mini App
+  const TG_APP_BASE_URL = "https://t.me/FilSerAnbot/DodleJump";
 
-  // Инициализация Telegram Mini App
   const tg = window.Telegram?.WebApp;
   if (tg) {
     tg.ready();
@@ -282,12 +343,23 @@
   let totalCoins = parseInt(localStorage.getItem('gtj_coins') || '0', 10);
   let unlockedSkins = JSON.parse(localStorage.getItem('gtj_skins') || '["classic"]');
   let currentSkinId = localStorage.getItem('gtj_skin') || 'classic';
+  let unlockedThemes = JSON.parse(localStorage.getItem('gtj_themes') || '["space"]');
+  let currentThemeId = localStorage.getItem('gtj_theme') || 'space';
 
   const SKINS = [
-    { id: 'classic', name: 'Классик', color: '#ff6b4a', price: 0 },
-    { id: 'cyan',    name: 'Кибер',   color: '#00e5ff', price: 25 },
-    { id: 'lime',    name: 'Эйсид',   color: '#76ff03', price: 60 },
-    { id: 'gold',    name: 'Золото',  color: '#ffd700', price: 120 }
+    { id: 'classic', name: 'Оранж',   color: '#ff6b4a', price: 0 },
+    { id: 'cyan',    name: 'Кибер',   color: '#00e5ff', price: 30 },
+    { id: 'lime',    name: 'Эйсид',   color: '#76ff03', price: 70 },
+    { id: 'gold',    name: 'Золото',  color: '#ffd700', price: 150 },
+    { id: 'alien',   name: 'Чужой',   color: '#a855f7', price: 220 },
+    { id: 'ninja',   name: 'Ниндзя',  color: '#22272e', price: 300 }
+  ];
+
+  const THEMES = [
+    { id: 'space',  name: 'Космос',   bg: '#0f111a', plat: '#22c55e', price: 0 },
+    { id: 'paper',  name: 'Тетрадь',  bg: '#e8edf3', plat: '#2563eb', price: 50 },
+    { id: 'sunset', name: 'Закат',    bg: '#2b1055', plat: '#ec4899', price: 100 },
+    { id: 'matrix', name: 'Матрица',  bg: '#051b11', plat: '#10b981', price: 180 }
   ];
 
   function saveGameData() {
@@ -295,12 +367,54 @@
     localStorage.setItem('gtj_coins', totalCoins.toString());
     localStorage.setItem('gtj_skins', JSON.stringify(unlockedSkins));
     localStorage.setItem('gtj_skin', currentSkinId);
+    localStorage.setItem('gtj_themes', JSON.stringify(unlockedThemes));
+    localStorage.setItem('gtj_theme', currentThemeId);
   }
 
-  // Кнопка "Поделиться"
+  async function syncUserStats() {
+    try {
+      await fetch(`${DB_BASE_URL}/users/${tgUser.id}.json`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: tgUser.name,
+          score: highScore,
+          coins: totalCoins,
+          updatedAt: Date.now()
+        })
+      });
+    } catch (e) {
+      console.error("Ошибка сохранения профиля:", e);
+    }
+  }
+
+  // Считывание реферала из Telegram start_param или GET-параметра
+  async function checkReferral() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const refId = tg?.initDataUnsafe?.start_param || urlParams.get('startapp') || urlParams.get('ref');
+    
+    if (refId && refId !== tgUser.id && !localStorage.getItem('gtj_referred_registered')) {
+      try {
+        await fetch(`${DB_BASE_URL}/referrals/${refId}/${tgUser.id}.json`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(true)
+        });
+        localStorage.setItem('gtj_referred_registered', 'true');
+      } catch (e) {
+        console.error("Ошибка регистрации реферала:", e);
+      }
+    }
+    syncUserStats();
+  }
+  checkReferral();
+
+  // Генерация ссылки http://t.me/FilSerAnbot/DodleJump?startapp=ID
   function shareGame() {
-    const text = `Я набрал ${highScore} очков в Gametg-jumple! Сможешь побить?`;
-    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(text)}`;
+    const refLink = `${TG_APP_BASE_URL}?startapp=${tgUser.id}`;
+    const text = `Я набрал ${highScore} очков в Jumple! Сможешь подняться выше? 🚀`;
+    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(refLink)}&text=${encodeURIComponent(text)}`;
+    
     if (tg && tg.openTelegramLink) {
       tg.openTelegramLink(shareUrl);
     } else {
@@ -308,30 +422,7 @@
     }
   }
 
-  // Сохранение рекорда в базу данных
-  async function pushGlobalScore(scoreVal) {
-    try {
-      const userUrl = `${DB_BASE_URL}/leaderboard/${tgUser.id}.json`;
-      const res = await fetch(userUrl);
-      const curr = await res.json();
-
-      if (!curr || scoreVal > (curr.score || 0)) {
-        await fetch(userUrl, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name: tgUser.name,
-            score: scoreVal,
-            updatedAt: Date.now()
-          })
-        });
-      }
-    } catch (e) {
-      console.error("Ошибка сохранения рекорда в БД:", e);
-    }
-  }
-
-  // Холст и физика
+  // --- ИГРОВОЙ ДВИЖОК ---
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d');
 
@@ -347,29 +438,38 @@
     h: 28,
     vx: 0,
     vy: 0,
-    jump: -10.6,
-    gravity: 0.32
+    jump: -10.8,
+    gravity: 0.33
   };
 
   let score = 0;
   let moveDir = 0;
   let isPlaying = false;
   let platforms = [];
-  const platWidth = 66;
+  const platWidth = 68;
   const platHeight = 12;
-  const platCount = 7;
 
   function initPlatforms() {
     platforms = [];
-    platforms.push({ x: width / 2 - platWidth / 2, y: height - 60, hasCoin: false, coinTaken: false });
-    for (let i = 1; i < platCount; i++) {
+    let currentY = height - 50;
+    platforms.push({ x: width / 2 - platWidth / 2, y: currentY, hasCoin: false, coinTaken: false, hasSpring: false });
+
+    while (currentY > 0) {
+      currentY -= Math.floor(Math.random() * 40) + 65;
       platforms.push({
         x: Math.random() * (width - platWidth),
-        y: (height / platCount) * i,
+        y: currentY,
         hasCoin: Math.random() < 0.35,
-        coinTaken: false
+        coinTaken: false,
+        hasSpring: Math.random() < 0.15
       });
     }
+  }
+
+  function getHighestPlatformY() {
+    let minY = height;
+    platforms.forEach(p => { if (p.y < minY) minY = p.y; });
+    return minY;
   }
 
   function startGame() {
@@ -388,29 +488,26 @@
     isPlaying = false;
     if (score > highScore) {
       highScore = score;
-      pushGlobalScore(highScore);
     }
     saveGameData();
+    syncUserStats();
 
-    document.getElementById('go-score').innerText = `Счет: ${score} | Ваш рекорд: ${highScore}`;
+    document.getElementById('go-score').innerText = `Высота: ${score} | Рекорд: ${highScore}`;
     document.getElementById('modal-gameover').classList.remove('hidden');
   }
 
-  // Управление
   window.addEventListener('touchstart', (e) => {
     if (!isPlaying) return;
     const touchX = e.touches[0].clientX - canvas.getBoundingClientRect().left;
     moveDir = touchX < width / 2 ? -1 : 1;
   });
 
-  window.addEventListener('touchend', () => {
-    moveDir = 0;
-  });
+  window.addEventListener('touchend', () => { moveDir = 0; });
 
   function update() {
     if (!isPlaying) return;
 
-    player.vx = moveDir * 5.4;
+    player.vx = moveDir * 5.5;
     player.x += player.vx;
 
     if (player.x > width) player.x = -player.w;
@@ -427,7 +524,11 @@
           player.y + player.h >= p.y &&
           player.y + player.h <= p.y + platHeight + player.vy
         ) {
-          player.vy = player.jump;
+          if (p.hasSpring) {
+            player.vy = player.jump * 1.6;
+          } else {
+            player.vy = player.jump;
+          }
         }
       });
     }
@@ -437,10 +538,10 @@
         const coinX = p.x + platWidth / 2;
         const coinY = p.y - 14;
         if (
-          player.x < coinX + 11 &&
-          player.x + player.w > coinX - 11 &&
-          player.y < coinY + 11 &&
-          player.y + player.h > coinY - 11
+          player.x < coinX + 12 &&
+          player.x + player.w > coinX - 12 &&
+          player.y < coinY + 12 &&
+          player.y + player.h > coinY - 12
         ) {
           p.coinTaken = true;
           totalCoins++;
@@ -455,15 +556,20 @@
       player.y = height / 2;
       score += Math.floor(diff / 2);
 
-      platforms.forEach(p => {
-        p.y += diff;
-        if (p.y > height) {
-          p.y = 0;
-          p.x = Math.random() * (width - platWidth);
-          p.hasCoin = Math.random() < 0.35;
-          p.coinTaken = false;
-        }
-      });
+      platforms.forEach(p => { p.y += diff; });
+      platforms = platforms.filter(p => p.y < height + 20);
+
+      let highestY = getHighestPlatformY();
+      while (highestY > -30) {
+        highestY -= Math.floor(Math.random() * 40) + 65;
+        platforms.push({
+          x: Math.random() * (width - platWidth),
+          y: highestY,
+          hasCoin: Math.random() < 0.35,
+          coinTaken: false,
+          hasSpring: Math.random() < 0.15
+        });
+      }
       updateHUD();
     }
 
@@ -473,28 +579,44 @@
   }
 
   function draw() {
-    ctx.clearRect(0, 0, width, height);
+    const curTheme = THEMES.find(t => t.id === currentThemeId) || THEMES[0];
 
-    // Платформы
+    ctx.fillStyle = curTheme.bg;
+    ctx.fillRect(0, 0, width, height);
+
+    if (curTheme.id === 'paper') {
+      ctx.strokeStyle = '#d5deea';
+      ctx.lineWidth = 1;
+      for (let y = 0; y < height; y += 24) {
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+      }
+    }
+
     platforms.forEach(p => {
-      ctx.fillStyle = '#3a8854';
+      ctx.fillStyle = curTheme.plat;
       ctx.fillRect(p.x, p.y, platWidth, platHeight);
+
+      if (p.hasSpring) {
+        ctx.fillStyle = '#f43f5e';
+        ctx.fillRect(p.x + platWidth / 2 - 6, p.y - 7, 12, 7);
+      }
 
       if (p.hasCoin && !p.coinTaken) {
         ctx.fillStyle = '#ffd700';
         ctx.beginPath();
-        ctx.arc(p.x + platWidth / 2, p.y - 9, 6.5, 0, Math.PI * 2);
+        ctx.arc(p.x + platWidth / 2, p.y - 10, 6.5, 0, Math.PI * 2);
         ctx.fill();
       }
     });
 
-    // Персонаж
     const activeSkin = SKINS.find(s => s.id === currentSkinId) || SKINS[0];
     ctx.fillStyle = activeSkin.color;
     ctx.fillRect(player.x, player.y, player.w, player.h);
 
-    // Глаза
-    ctx.fillStyle = '#fff';
+    ctx.fillStyle = (curTheme.id === 'paper' && activeSkin.id === 'classic') ? '#000' : '#fff';
     const eyeOffset = moveDir < 0 ? 3 : (moveDir > 0 ? 15 : 9);
     ctx.fillRect(player.x + eyeOffset, player.y + 6, 4, 6);
     ctx.fillRect(player.x + eyeOffset + 7, player.y + 6, 4, 6);
@@ -507,13 +629,14 @@
   }
 
   function updateHUD() {
-    document.getElementById('hud-score').innerText = `Счет: ${score}`;
+    document.getElementById('hud-score').innerText = `Высота: ${score}`;
     document.getElementById('hud-coins').innerText = `🪙 ${totalCoins}`;
   }
 
-  // Навигация
+  // --- НАВИГАЦИЯ ---
   function closeModals() {
     document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
+    document.getElementById('menu-top-nav').classList.add('hidden');
   }
 
   function openMenu() {
@@ -521,65 +644,110 @@
     closeModals();
     document.getElementById('menu-stats').innerText = `Рекорд: ${highScore} | Монеты: ${totalCoins} 🪙`;
     document.getElementById('modal-menu').classList.remove('hidden');
+    document.getElementById('menu-top-nav').classList.remove('hidden');
     updateHUD();
+  }
+
+  // --- МАГАЗИН ---
+  let activeTab = 'skins';
+  function switchShopTab(tab) {
+    activeTab = tab;
+    document.getElementById('tab-btn-skins').classList.toggle('active', tab === 'skins');
+    document.getElementById('tab-btn-themes').classList.toggle('active', tab === 'themes');
+    renderShopItems();
   }
 
   function openShop() {
     closeModals();
     document.getElementById('shop-coins-val').innerText = totalCoins;
-    const container = document.getElementById('shop-items');
-    container.innerHTML = '';
-
-    SKINS.forEach(skin => {
-      const isUnlocked = unlockedSkins.includes(skin.id);
-      const isEquipped = currentSkinId === skin.id;
-
-      const card = document.createElement('div');
-      card.className = `skin-card ${isEquipped ? 'active' : ''}`;
-      card.innerHTML = `
-        <div class="skin-preview" style="background:${skin.color};"></div>
-        <div style="font-size:12px;font-weight:600;">${skin.name}</div>
-        <button class="skin-btn" style="background:${isEquipped ? '#00a8ff' : '#2b303e'};color:#fff;">
-          ${isEquipped ? 'Надет' : (isUnlocked ? 'Выбрать' : `🪙 ${skin.price}`)}
-        </button>
-      `;
-
-      card.querySelector('button').onclick = () => {
-        if (isEquipped) return;
-        if (isUnlocked) {
-          currentSkinId = skin.id;
-        } else if (totalCoins >= skin.price) {
-          totalCoins -= skin.price;
-          unlockedSkins.push(skin.id);
-          currentSkinId = skin.id;
-        } else {
-          alert('Не хватает монет!');
-          return;
-        }
-        saveGameData();
-        openShop();
-        updateHUD();
-      };
-
-      container.appendChild(card);
-    });
-
+    switchShopTab('skins');
     document.getElementById('modal-shop').classList.remove('hidden');
   }
 
+  function renderShopItems() {
+    const container = document.getElementById('shop-items');
+    container.innerHTML = '';
+
+    if (activeTab === 'skins') {
+      SKINS.forEach(skin => {
+        const isUnlocked = unlockedSkins.includes(skin.id);
+        const isEquipped = currentSkinId === skin.id;
+
+        const card = document.createElement('div');
+        card.className = `shop-card ${isEquipped ? 'active' : ''}`;
+        card.innerHTML = `
+          <div class="item-preview" style="background:${skin.color};"></div>
+          <div style="font-size:12px;font-weight:600;">${skin.name}</div>
+          <button class="shop-card-btn" style="background:${isEquipped ? '#00b4d8' : '#272b38'};color:#fff;">
+            ${isEquipped ? 'Надет' : (isUnlocked ? 'Выбрать' : `🪙 ${skin.price}`)}
+          </button>
+        `;
+        card.querySelector('button').onclick = () => {
+          if (isEquipped) return;
+          if (isUnlocked) {
+            currentSkinId = skin.id;
+          } else if (totalCoins >= skin.price) {
+            totalCoins -= skin.price;
+            unlockedSkins.push(skin.id);
+            currentSkinId = skin.id;
+          } else {
+            alert('Недостаточно монет!');
+            return;
+          }
+          saveGameData();
+          syncUserStats();
+          openShop();
+          updateHUD();
+        };
+        container.appendChild(card);
+      });
+    } else {
+      THEMES.forEach(th => {
+        const isUnlocked = unlockedThemes.includes(th.id);
+        const isEquipped = currentThemeId === th.id;
+
+        const card = document.createElement('div');
+        card.className = `shop-card ${isEquipped ? 'active' : ''}`;
+        card.innerHTML = `
+          <div class="item-preview" style="background:${th.bg};border:1px solid ${th.plat};"></div>
+          <div style="font-size:12px;font-weight:600;">${th.name}</div>
+          <button class="shop-card-btn" style="background:${isEquipped ? '#00b4d8' : '#272b38'};color:#fff;">
+            ${isEquipped ? 'Выбран' : (isUnlocked ? 'Включить' : `🪙 ${th.price}`)}
+          </button>
+        `;
+        card.querySelector('button').onclick = () => {
+          if (isEquipped) return;
+          if (isUnlocked) {
+            currentThemeId = th.id;
+          } else if (totalCoins >= th.price) {
+            totalCoins -= th.price;
+            unlockedThemes.push(th.id);
+            currentThemeId = th.id;
+          } else {
+            alert('Недостаточно монет!');
+            return;
+          }
+          saveGameData();
+          openShop();
+        };
+        container.appendChild(card);
+      });
+    }
+  }
+
+  // --- ТОП-10 ---
   async function openLeaderboard() {
     closeModals();
     const board = document.getElementById('leader-board-items');
     const statusText = document.getElementById('db-status');
     board.innerHTML = '';
-    statusText.innerText = 'Загрузка с сервера...';
+    statusText.innerText = 'Загрузка...';
     document.getElementById('modal-leaders').classList.remove('hidden');
 
     try {
-      const res = await fetch(`${DB_BASE_URL}/leaderboard.json`);
+      const res = await fetch(`${DB_BASE_URL}/users.json`);
       const data = await res.json();
-
-      statusText.innerText = 'Топ-10 игроков мира';
+      statusText.innerText = 'Топ-10 прыгунов';
 
       if (!data) {
         board.innerHTML = '<div style="padding:10px;color:#777;">Пока нет рекордов</div>';
@@ -588,22 +756,122 @@
 
       const list = Object.keys(data).map(key => ({ id: key, ...data[key] }));
       list.sort((a, b) => (b.score || 0) - (a.score || 0));
-      const top10 = list.slice(0, 10);
 
-      top10.forEach((item, idx) => {
+      list.slice(0, 10).forEach((item, idx) => {
         const row = document.createElement('div');
         const isMe = item.id === tgUser.id;
-        row.className = `leader-row ${isMe ? 'me' : ''}`;
-        row.innerHTML = `<span>#${idx + 1} ${item.name || 'Игрок'} ${isMe ? '(Вы)' : ''}</span><span>${item.score || 0}</span>`;
+        row.className = `data-row ${isMe ? 'me' : ''}`;
+        row.innerHTML = `<span>#${idx + 1} ${item.name || 'Игрок'} ${isMe ? '(Вы)' : ''}</span><span>${item.score || 0}м</span>`;
         board.appendChild(row);
       });
     } catch (err) {
-      statusText.innerText = 'Ошибка подключения к базе';
-      console.error(err);
+      statusText.innerText = 'Ошибка подключения';
     }
   }
 
-  // Генерация стартовых платформ для заднего фона меню и запуск цикла
+  // --- РЕФЕРАЛЫ ---
+  async function openReferrals() {
+    closeModals();
+    const listContainer = document.getElementById('referrals-items');
+    const countText = document.getElementById('ref-count-text');
+    listContainer.innerHTML = 'Загрузка данных...';
+    document.getElementById('modal-referrals').classList.remove('hidden');
+
+    try {
+      const [refRes, usersRes] = await Promise.all([
+        fetch(`${DB_BASE_URL}/referrals/${tgUser.id}.json`),
+        fetch(`${DB_BASE_URL}/users.json`)
+      ]);
+      const myRefs = await refRes.json();
+      const allUsers = await usersRes.json() || {};
+
+      listContainer.innerHTML = '';
+
+      if (!myRefs) {
+        countText.innerText = 'Приглашено: 0 друзей';
+        listContainer.innerHTML = '<div style="padding:10px;color:#777;">Пока никто не перешёл по вашей ссылке</div>';
+        return;
+      }
+
+      const refIds = Object.keys(myRefs);
+      countText.innerText = `Приглашено: ${refIds.length}`;
+
+      refIds.forEach(friendId => {
+        const friend = allUsers[friendId] || { name: 'Друг', score: 0, coins: 0 };
+        const row = document.createElement('div');
+        row.className = 'data-row';
+        row.innerHTML = `
+          <span>👤 ${friend.name}</span>
+          <span style="font-weight:600;">🚀 ${friend.score}м | 🪙 ${friend.coins}</span>
+        `;
+        listContainer.appendChild(row);
+      });
+    } catch (e) {
+      listContainer.innerHTML = 'Ошибка загрузки рефералов';
+    }
+  }
+
+  // --- АДМИНКА ---
+  function openAdminPrompt() {
+    const pass = prompt('Введите пароль разработчика:');
+    if (pass === ADMIN_PASSWORD) {
+      closeModals();
+      document.getElementById('modal-admin').classList.remove('hidden');
+    } else if (pass !== null) {
+      alert('Неверный пароль!');
+    }
+  }
+
+  function adminSetCoins() {
+    const val = parseInt(document.getElementById('admin-coins-input').value, 10);
+    if (!isNaN(val)) {
+      totalCoins = val;
+      saveGameData();
+      syncUserStats();
+      alert(`Монеты установлены: ${totalCoins}`);
+    }
+  }
+
+  function adminUnlockAll() {
+    unlockedSkins = SKINS.map(s => s.id);
+    unlockedThemes = THEMES.map(t => t.id);
+    saveGameData();
+    alert('Все скины и фоны открыты!');
+  }
+
+  function adminSetScore() {
+    const val = parseInt(document.getElementById('admin-score-input').value, 10);
+    if (!isNaN(val)) {
+      highScore = val;
+      saveGameData();
+      syncUserStats();
+      alert(`Рекорд обновлен: ${highScore}`);
+    }
+  }
+
+  async function adminResetDatabase() {
+    const confirm1 = confirm('ВНИМАНИЕ! Вы собираетесь полностью стереть всех пользователей и рекорды. Продолжить?');
+    if (!confirm1) return;
+
+    const confirm2 = prompt('Введите СБРОС большими буквами для подтверждения:');
+    if (confirm2 === 'СБРОС') {
+      try {
+        await Promise.all([
+          fetch(`${DB_BASE_URL}/users.json`, { method: 'DELETE' }),
+          fetch(`${DB_BASE_URL}/referrals.json`, { method: 'DELETE' })
+        ]);
+        alert('База данных очищена!');
+        highScore = 0;
+        saveGameData();
+        openMenu();
+      } catch (e) {
+        alert('Ошибка очистки базы: ' + e);
+      }
+    } else {
+      alert('Очистка отменена.');
+    }
+  }
+
   initPlatforms();
   openMenu();
   loop();
