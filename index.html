@@ -11,7 +11,7 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
     body {
-      background: #0f1015;
+      background: #0d0e12;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -34,6 +34,7 @@
       width: 100%;
       height: 100%;
     }
+    /* Верхняя панель счета в игре */
     #top-bar {
       position: absolute;
       top: 14px;
@@ -53,11 +54,13 @@
       backdrop-filter: blur(6px);
       border: 1px solid rgba(255, 255, 255, 0.1);
     }
+
+    /* Модальные окна */
     .modal {
       position: absolute;
       inset: 0;
-      background: rgba(10, 11, 16, 0.92);
-      backdrop-filter: blur(10px);
+      background: rgba(13, 14, 20, 0.94);
+      backdrop-filter: blur(12px);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -67,8 +70,74 @@
       z-index: 20;
     }
     .hidden { display: none !important; }
-    h2 { font-size: 24px; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; }
-    p { font-size: 14px; color: #8f94a6; margin-bottom: 18px; }
+
+    /* Кнопка Поделиться (слева сверху) */
+    .btn-share {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #fff;
+      padding: 8px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      z-index: 30;
+    }
+    .btn-share:active { transform: scale(0.96); }
+
+    /* Заголовки и текст */
+    h1 { font-size: 30px; font-weight: 800; letter-spacing: 1px; margin-bottom: 6px; color: #fff; text-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+    h2 { font-size: 22px; margin-bottom: 6px; text-transform: uppercase; }
+    p { font-size: 14px; color: #8f94a6; margin-bottom: 20px; }
+
+    /* Большая центральная кнопка "Прыгать" */
+    .btn-play {
+      width: 220px;
+      height: 65px;
+      background: linear-gradient(135deg, #00a8ff, #0066cc);
+      color: #fff;
+      border: none;
+      border-radius: 20px;
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: 1px;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(0, 102, 204, 0.4);
+      margin-bottom: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-play:active { transform: scale(0.96); }
+
+    /* Нижний ряд кнопок меню (Рекорды и Магазин) */
+    .menu-bottom-row {
+      display: flex;
+      gap: 12px;
+      width: 100%;
+      max-width: 280px;
+    }
+    .btn-menu-sub {
+      flex: 1;
+      background: #1f222d;
+      border: 1px solid #2d3242;
+      color: #cbd0dc;
+      padding: 12px 10px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-menu-sub:active { transform: scale(0.96); }
+
+    /* Стандартные кнопки */
     .btn {
       width: 100%;
       max-width: 260px;
@@ -76,14 +145,16 @@
       color: #fff;
       border: none;
       padding: 13px 18px;
-      margin: 5px 0;
+      margin: 6px 0;
       border-radius: 12px;
       font-size: 15px;
       font-weight: 600;
       cursor: pointer;
     }
     .btn:active { transform: scale(0.98); }
-    .btn-secondary { background: #262934; color: #cbd0dc; }
+    .btn-secondary { background: #222530; color: #cbd0dc; border: 1px solid #2e3342; }
+
+    /* Магазин */
     .shop-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -93,8 +164,8 @@
       margin-bottom: 18px;
     }
     .skin-card {
-      background: #1f222c;
-      border: 2px solid #2d3140;
+      background: #1c1e27;
+      border: 2px solid #2b2f3d;
       border-radius: 12px;
       padding: 10px;
       display: flex;
@@ -102,7 +173,7 @@
       align-items: center;
       gap: 6px;
     }
-    .skin-card.active { border-color: #2481cc; }
+    .skin-card.active { border-color: #00a8ff; }
     .skin-preview { width: 34px; height: 34px; border-radius: 8px; }
     .skin-btn {
       width: 100%;
@@ -113,10 +184,12 @@
       border: none;
       cursor: pointer;
     }
+
+    /* Таблица рекордов */
     .leader-list {
       width: 100%;
       max-width: 290px;
-      background: #1f222c;
+      background: #1c1e27;
       border-radius: 12px;
       padding: 10px 14px;
       margin-bottom: 18px;
@@ -127,11 +200,11 @@
       display: flex;
       justify-content: space-between;
       padding: 8px 0;
-      border-bottom: 1px solid #2a2e3d;
+      border-bottom: 1px solid #282c39;
       font-size: 13px;
     }
     .leader-row:last-child { border-bottom: none; }
-    .leader-row.me { color: #00d2ff; font-weight: 700; }
+    .leader-row.me { color: #00e5ff; font-weight: 700; }
   </style>
 </head>
 <body>
@@ -139,39 +212,57 @@
 <div id="game-container">
   <canvas id="game"></canvas>
 
+  <!-- Верхняя строка во время прыжков -->
   <div id="top-bar">
     <div class="badge" id="hud-score">Счет: 0</div>
     <div class="badge" id="hud-coins">🪙 0</div>
   </div>
 
-  <!-- Game Over -->
-  <div id="modal-gameover" class="modal hidden">
-    <h2>Gametg-jumple</h2>
-    <p id="go-score">Счет: 0 | Рекорд: 0</p>
-    <button class="btn" onclick="startGame()">Играть снова</button>
-    <button class="btn btn-secondary" onclick="openShop()">🛍 Магазин скинов</button>
-    <button class="btn btn-secondary" onclick="openLeaderboard()">🏆 Мировой рекорд</button>
+  <!-- Главное меню -->
+  <div id="modal-menu" class="modal">
+    <button class="btn-share" onclick="shareGame()">↗ Поделиться</button>
+
+    <h1>JUMPLE</h1>
+    <p id="menu-stats">Рекорд: 0 | Монеты: 0 🪙</p>
+
+    <button class="btn-play" onclick="startGame()">
+      <span>🚀</span> ПРЫГАТЬ
+    </button>
+
+    <div class="menu-bottom-row">
+      <button class="btn-menu-sub" onclick="openLeaderboard()">🏆 Рекорды</button>
+      <button class="btn-menu-sub" onclick="openShop()">🛍 Магазин</button>
+    </div>
   </div>
 
-  <!-- Магазин -->
+  <!-- Экран Game Over -->
+  <div id="modal-gameover" class="modal hidden">
+    <h2>ПОРАЖЕНИЕ</h2>
+    <p id="go-score">Счет: 0 | Рекорд: 0</p>
+    <button class="btn" onclick="startGame()">Прыгать снова</button>
+    <button class="btn btn-secondary" onclick="openShop()">🛍 Магазин</button>
+    <button class="btn btn-secondary" onclick="openLeaderboard()">🏆 Рекорды</button>
+    <button class="btn btn-secondary" onclick="openMenu()">В меню</button>
+  </div>
+
+  <!-- Окно магазина -->
   <div id="modal-shop" class="modal hidden">
     <h2>Магазин скинов</h2>
     <p>Баланс: <span id="shop-coins-val">0</span> 🪙</p>
     <div class="shop-grid" id="shop-items"></div>
-    <button class="btn btn-secondary" onclick="closeModals()">Назад</button>
+    <button class="btn btn-secondary" onclick="openMenu()">Назад</button>
   </div>
 
-  <!-- Лидерборд -->
+  <!-- Окно рекордов -->
   <div id="modal-leaders" class="modal hidden">
     <h2>Топ игроков</h2>
     <p id="db-status">Загрузка...</p>
     <div class="leader-list" id="leader-board-items"></div>
-    <button class="btn btn-secondary" onclick="closeModals()">Назад</button>
+    <button class="btn btn-secondary" onclick="openMenu()">Назад</button>
   </div>
 </div>
 
 <script>
-  // Адрес вашей базы данных
   const DB_BASE_URL = "https://gametg-jumple-default-rtdb.firebaseio.com";
 
   // Инициализация Telegram Mini App
@@ -206,7 +297,18 @@
     localStorage.setItem('gtj_skin', currentSkinId);
   }
 
-  // Отправка рекорда в Firebase
+  // Кнопка "Поделиться"
+  function shareGame() {
+    const text = `Я набрал ${highScore} очков в Gametg-jumple! Сможешь побить?`;
+    const shareUrl = `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(text)}`;
+    if (tg && tg.openTelegramLink) {
+      tg.openTelegramLink(shareUrl);
+    } else {
+      window.open(shareUrl, '_blank');
+    }
+  }
+
+  // Сохранение рекорда в базу данных
   async function pushGlobalScore(scoreVal) {
     try {
       const userUrl = `${DB_BASE_URL}/leaderboard/${tgUser.id}.json`;
@@ -229,7 +331,7 @@
     }
   }
 
-  // Игра и физика
+  // Холст и физика
   const canvas = document.getElementById('game');
   const ctx = canvas.getContext('2d');
 
@@ -294,6 +396,7 @@
     document.getElementById('modal-gameover').classList.remove('hidden');
   }
 
+  // Управление
   window.addEventListener('touchstart', (e) => {
     if (!isPlaying) return;
     const touchX = e.touches[0].clientX - canvas.getBoundingClientRect().left;
@@ -372,6 +475,7 @@
   function draw() {
     ctx.clearRect(0, 0, width, height);
 
+    // Платформы
     platforms.forEach(p => {
       ctx.fillStyle = '#3a8854';
       ctx.fillRect(p.x, p.y, platWidth, platHeight);
@@ -384,10 +488,12 @@
       }
     });
 
+    // Персонаж
     const activeSkin = SKINS.find(s => s.id === currentSkinId) || SKINS[0];
     ctx.fillStyle = activeSkin.color;
     ctx.fillRect(player.x, player.y, player.w, player.h);
 
+    // Глаза
     ctx.fillStyle = '#fff';
     const eyeOffset = moveDir < 0 ? 3 : (moveDir > 0 ? 15 : 9);
     ctx.fillRect(player.x + eyeOffset, player.y + 6, 4, 6);
@@ -405,8 +511,17 @@
     document.getElementById('hud-coins').innerText = `🪙 ${totalCoins}`;
   }
 
+  // Навигация
   function closeModals() {
     document.querySelectorAll('.modal').forEach(m => m.classList.add('hidden'));
+  }
+
+  function openMenu() {
+    isPlaying = false;
+    closeModals();
+    document.getElementById('menu-stats').innerText = `Рекорд: ${highScore} | Монеты: ${totalCoins} 🪙`;
+    document.getElementById('modal-menu').classList.remove('hidden');
+    updateHUD();
   }
 
   function openShop() {
@@ -424,7 +539,7 @@
       card.innerHTML = `
         <div class="skin-preview" style="background:${skin.color};"></div>
         <div style="font-size:12px;font-weight:600;">${skin.name}</div>
-        <button class="skin-btn" style="background:${isEquipped ? '#2481cc' : '#2f3444'};color:#fff;">
+        <button class="skin-btn" style="background:${isEquipped ? '#00a8ff' : '#2b303e'};color:#fff;">
           ${isEquipped ? 'Надет' : (isUnlocked ? 'Выбрать' : `🪙 ${skin.price}`)}
         </button>
       `;
@@ -452,7 +567,6 @@
     document.getElementById('modal-shop').classList.remove('hidden');
   }
 
-  // Загрузка топа с Firebase
   async function openLeaderboard() {
     closeModals();
     const board = document.getElementById('leader-board-items');
@@ -489,7 +603,9 @@
     }
   }
 
-  startGame();
+  // Генерация стартовых платформ для заднего фона меню и запуск цикла
+  initPlatforms();
+  openMenu();
   loop();
 </script>
 </body>
